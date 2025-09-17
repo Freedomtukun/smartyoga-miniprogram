@@ -1,0 +1,150 @@
+<!-- components/PoseScore/index.wxml -->
+<view class="pose-score {{darkMode ? 'dark' : ''}}">
+  <!-- 骨架图 Canvas -->
+  <view class="canvas-container">
+    <canvas 
+      canvas-id="skeletonCanvas" 
+      class="canvas"
+      style="width: {{imgWidth}}rpx; height: {{imgHeight}}rpx;"
+      bindtouchstart="onCanvasTouch"
+      disable-scroll="{{true}}"
+    ></canvas>
+    
+    <!-- 加载状态 -->
+    <view wx:if="{{loading}}" class="canvas-loading">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">AI 分析中</text>
+    </view>
+    
+    <!-- 错误状态 -->
+    <view wx:if="{{error}}" class="canvas-error" bindtap="onRetry">
+      <text class="error-icon">⚠️</text>
+      <text class="error-text">{{error}}</text>
+      <text class="retry-hint">点击重试</text>
+    </view>
+    
+    <!-- Canvas 遮罩层（显示统计信息） -->
+    <view wx:if="{{!loading && !error && keypoints.length > 0}}" class="canvas-overlay">
+      <view class="keypoint-stats">
+        <text class="stat-item">{{validKeypoints}}/{{totalKeypoints}} 点</text>
+        <text class="stat-item">{{avgConfidence}}% 精度</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 分数区域 -->
+  <view class="score-section">
+    <!-- 姿势名称和分数 -->
+    <view class="score-header">
+      <view class="pose-info">
+        <text class="pose-name">{{poseName || '未知姿势'}}</text>
+        <text wx:if="{{processingTime > 0}}" class="processing-time">{{processingTime}}ms</text>
+      </view>
+      <view class="score-badge score-{{scoreLevel}}">
+        <text class="score-value">{{displayScore}}</text>
+        <text class="score-unit">分</text>
+      </view>
+    </view>
+    
+    <!-- 进度条 -->
+    <view class="progress-container">
+      <view class="progress-bg">
+        <view 
+          class="progress-bar score-{{scoreLevel}}"
+          style="width: {{score}}%; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);"
+        ></view>
+        <view class="progress-glow score-{{scoreLevel}}" style="left: {{score}}%;"></view>
+      </view>
+      <view class="score-labels">
+        <text class="label-left">0</text>
+        <text class="label-center">50</text>
+        <text class="label-right">100</text>
+      </view>
+    </view>
+    
+    <!-- 分数等级说明 -->
+    <view class="score-description">
+      <text class="score-level-text">{{scoreDescription}}</text>
+      <view wx:if="{{score >= 85}}" class="score-emoji">🎉</view>
+      <view wx:elif="{{score >= 70}}" class="score-emoji">👍</view>
+      <view wx:elif="{{score >= 50}}" class="score-emoji">💪</view>
+      <view wx:else class="score-emoji">🌱</view>
+    </view>
+  </view>
+
+  <!-- AI 建议区域 -->
+  <view wx:if="{{advice}}" class="advice-section">
+    <view class="advice-header">
+      <text class="advice-icon">🤖</text>
+      <text class="advice-title">AI 专业建议</text>
+    </view>
+    <view class="advice-content">
+      <text class="advice-text">{{advice}}</text>
+    </view>
+  </view>
+  
+  <!-- 详细数据（可折叠） -->
+  <view wx:if="{{showDetails}}" class="details-section">
+    <view class="details-header" bindtap="toggleDetails">
+      <view class="details-title-wrapper">
+        <text class="details-icon">📊</text>
+        <text class="details-title">检测详情</text>
+      </view>
+      <view class="details-toggle {{detailsExpanded ? 'expanded' : ''}}">
+        <text class="toggle-text">{{detailsExpanded ? '收起' : '展开'}}</text>
+        <text class="toggle-arrow">{{detailsExpanded ? '▲' : '▼'}}</text>
+      </view>
+    </view>
+    
+    <view wx:if="{{detailsExpanded}}" class="details-content">
+      <view class="detail-grid">
+        <view class="detail-item">
+          <text class="detail-label">检测点数</text>
+          <text class="detail-value">{{validKeypoints}}/{{totalKeypoints}}</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">平均置信度</text>
+          <text class="detail-value">{{avgConfidence}}%</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">处理时间</text>
+          <text class="detail-value">{{processingTime}}ms</text>
+        </view>
+        <view class="detail-item">
+          <text class="detail-label">姿势等级</text>
+          <text class="detail-value score-{{scoreLevel}}">{{scoreLevel.toUpperCase()}}</text>
+        </view>
+      </view>
+      
+      <!-- 关键点置信度分布 -->
+      <view wx:if="{{keypoints.length > 0}}" class="confidence-distribution">
+        <text class="distribution-title">关键点置信度分布</text>
+        <view class="confidence-bars">
+          <view 
+            wx:for="{{keypoints}}" 
+            wx:key="index"
+            wx:if="{{item && item.score >= 0.1}}"
+            class="confidence-bar"
+          >
+            <view 
+              class="confidence-fill"
+              style="height: {{item.score * 100}}%; background: {{item.score > 0.7 ? '#22c55e' : item.score > 0.4 ? '#3b82f6' : '#f59e0b'}};"
+            ></view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <!-- 操作按钮 -->
+  <view class="action-buttons">
+    <button wx:if="{{error}}" class="retry-button" bindtap="onRetry">
+      <text class="button-icon">🔄</text>
+      <text class="button-text">重新检测</text>
+    </button>
+    <button wx:else class="export-button" bindtap="exportCanvas">
+      <text class="button-icon">📷</text>
+      <text class="button-text">保存骨架图</text>
+    </button>
+  </view>
+</view>

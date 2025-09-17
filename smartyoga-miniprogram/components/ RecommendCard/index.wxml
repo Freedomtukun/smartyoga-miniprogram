@@ -1,0 +1,62 @@
+<view wx:if="{{item}}" 
+      class="recommend-card {{themeClass}}" 
+      bindtap="tap">
+  <!-- Loading 状态遮罩 -->
+  <view wx:if="{{loading}}" class="recommend-card__loading">
+    <text class="loading-text">打开中...</text>
+  </view>
+
+  <!-- 卡片头部 -->
+  <view class="recommend-card__header">
+    <view class="title-area">
+      <!-- ✅ 优先使用 CSS 文本截断 -->
+      <text class="recommend-card__title">
+        {{displayName || '未知商家'}}
+      </text>
+      
+      <!-- 分类标签 -->
+      <view wx:if="{{item.category}}" 
+            class="recommend-card__category category--{{item.category}}">
+        {{item.category}}
+      </view>
+    </view>
+    
+    <!-- ✅ 动态显示评分 -->
+    <text wx:if="{{showRating && item.rating}}" 
+          class="simple-rating">
+      ⭐ {{item.rating}}
+    </text>
+  </view>
+
+  <!-- 推荐理由/描述 -->
+  <text class="recommend-card__subtitle">
+    {{item.recommend || item.description || '系统智能推荐'}}
+  </text>
+
+  <!-- 底部信息栏 -->
+  <view class="recommend-card__footer">
+    <!-- 地址信息 -->
+    <view class="address-info">
+      <text wx:if="{{item.address}}" class="recommend-card__address">
+        📍 {{item.address}}
+      </text>
+      
+      <!-- ✅ 动态显示距离 -->
+      <text wx:if="{{showDistance && formattedDistance}}" 
+            class="recommend-card__distance">
+        🚶 {{formattedDistance}}
+      </text>
+    </view>
+
+    <!-- 地图按钮 -->
+    <button wx:if="{{item.location}}" 
+            class="btn-map" 
+            size="mini" 
+            type="primary"
+            bindtap="openMap" 
+            catchtap>
+      地图
+    </button>
+  </view>
+</view>
+`;

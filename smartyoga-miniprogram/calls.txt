@@ -1,0 +1,4 @@
+pages/invite/invite.js:19:      wx.cloud.callFunction({
+pages/invite/invite.js:40:      wx.cloud.callFunction({
+utils/cloud-sequence-service.js:135:    const cloudResult = await wx.cloud.callFunction({
+utils/cloud-sequence-service.js:193:    // If it's a generic error from wx.cloud.callFunction, that will be rethrown.
